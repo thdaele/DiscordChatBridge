@@ -2,6 +2,7 @@ package net.dragonbabyfly.discordchatbridge.config;
 
 import com.oroarmor.config.Config;
 import com.oroarmor.config.ConfigItemGroup;
+import com.oroarmor.config.IntegerConfigItem;
 import com.oroarmor.config.StringConfigItem;
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -25,9 +26,12 @@ public class DiscordChatBridgeConfig extends Config {
         public static final StringConfigItem token = new StringConfigItem("token", "insert bot token here", "token");
         public static final LongConfigItem chatChannelID = new LongConfigItem("chatChannelID", 0L, "chatChannelID");
         public static final LongConfigItem serverID = new LongConfigItem("serverID", 0L, "serverID");
+        public static final StringConfigItem botName = new StringConfigItem("botName", "insert bot name here", "botName");
+        public static final StringConfigItem botIconUrl = new StringConfigItem("botIconUrl", "insert bot icon url here", "botIconUrl");
+        public static final IntegerConfigItem embedColor = new IntegerConfigItem("embedColor", 0, "embedColor");
 
         public GlobalConfig() {
-            super(of(token, chatChannelID, serverID), "DiscordBot");
+            super(of(token, chatChannelID, serverID, botName, botIconUrl, embedColor), "DiscordBot");
         }
     }
 }

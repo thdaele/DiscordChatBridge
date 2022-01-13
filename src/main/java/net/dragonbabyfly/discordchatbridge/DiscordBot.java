@@ -2,16 +2,16 @@ package net.dragonbabyfly.discordchatbridge;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.minecraft.network.MessageType;
-import net.minecraft.server.PlayerManager;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.*;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.MathHelper;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
@@ -19,19 +19,33 @@ import java.util.List;
 
 public class DiscordBot extends ListenerAdapter {
     private final JDA jda;
-    private final PlayerManager playerManager;
+    private final MinecraftServer server;
     private final static Long ChannelID = DiscordChatBridge.CONFIG.getValue("DiscordBot.chatChannelID", Long.class);
     private final static Long serverID = DiscordChatBridge.CONFIG.getValue("DiscordBot.serverID", Long.class);
     private final static String channelURL = String.format("https://discordapp.com/channels/%d/%d/", serverID, ChannelID);
+
+    private final static String authorName = DiscordChatBridge.CONFIG.getValue("DiscordBot.botName", String.class);
+    private final static String authorIcon = DiscordChatBridge.CONFIG.getValue("DiscordBot.botIconUrl", String.class);
+    private final static Integer embedColor = DiscordChatBridge.CONFIG.getValue("DiscordBot.embedColor", Integer.class);
     
-    public DiscordBot(String token, PlayerManager playerManager) throws LoginException, InterruptedException {
-        this.playerManager = playerManager;
+    public DiscordBot(String token, MinecraftServer minecraftServer) throws LoginException, InterruptedException {
+        this.server = minecraftServer;
         this.jda = JDABuilder
                 .createDefault(token)
                 .addEventListeners(this)
                 .build()
                 .awaitReady();
         this.sendToDiscord("Server started!");
+
+        Guild guild = this.jda.getGuildById(serverID);
+        TextChannel channel = this.jda.getTextChannelById(ChannelID);
+        if (guild == null) {
+            throw new LoginException("Invalid serverID inside config file");
+        } else if (channel == null) {
+            throw new LoginException("Invalid chatChannelID inside config file");
+        }
+        guild.upsertCommand("tps", "Shows server TPS and MSPT").queue();
+        guild.upsertCommand("online", "Shows the online players").queue();
     }
 
     public void sendToDiscord(String message) {
@@ -67,7 +81,26 @@ public class DiscordBot extends ListenerAdapter {
 //                        .setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, file.getUrl()));
                 text.append(fileName);
             }
-            this.playerManager.broadcast(text, MessageType.CHAT, Util.NIL_UUID);
+            this.server.execute(() -> this.server.getPlayerManager().broadcast(text, MessageType.CHAT, Util.NIL_UUID));
+        }
+    }
+
+    @Override
+    public void onSlashCommand(SlashCommandEvent event) {
+        if (event.getName().equals("tps")) {
+            this.server.execute(() -> {
+                final double MSPT = MathHelper.average(this.server.lastTickLengths) * 1E-6D;
+                final double TPS = 1000D / Math.max(50, MSPT);
+                event.reply(String.format("**TPS: %.2f MSPT: %.2f**", TPS, MSPT)).queue();
+            });
+        } else if (event.getName().equals("online")) {
+            this.server.execute(() -> {
+                final String[] players = this.server.getPlayerNames();
+                final String title = String.format("%d player%s online:", players.length, players.length != 1 ? "s" : "");
+                final MessageEmbed.AuthorInfo author = new MessageEmbed.AuthorInfo(authorName, null, authorIcon, null);
+                final MessageEmbed embed = new MessageEmbed(null, title, StringUtils.join(players, "\n").replaceAll("_", "\\\\_"), EmbedType.RICH, null, embedColor, null, null, author, null, null, null, null);
+                event.replyEmbeds(embed).queue();
+            });
         }
     }
 }
