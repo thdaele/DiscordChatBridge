@@ -1,25 +1,27 @@
 {
   "schemaVersion": 1,
-  "id": "dragonbabyfly",
+  "id": "discordchatbridge",
   "version": "${version}",
   "name": "DiscordChatBridge",
-  "description": "",
+  "description": "Chatbridge between minecraft and discord",
   "authors": [
     "dragonbabyfly"
   ],
-  "contact": {},
+  "contact": {
+    "repo": "https://github.com/thdaele/DiscordChatBridge"
+  },
   "license": "GPL-3.0",
-  "icon": "assets/dragonbabyfly/icon.png",
-  "environment": "server",
+  "icon": "assets/DiscordChatBridge/icon.png",
+  "environment": "*",
   "entrypoints": {
     "client": [
     ],
     "main": [
-      "com.dragonbabyfly.DiscordChatBridge"
+      "net.dragonbabyfly.discordchatbridge.DiscordChatBridge"
     ]
   },
   "mixins": [
-    "discordChatBridge.mixins.json"
+    "DiscordChatBridge.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.12.12",
