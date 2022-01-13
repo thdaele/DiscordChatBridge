@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.*;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -55,6 +56,14 @@ public class DiscordBot extends ListenerAdapter {
         }
     }
 
+    public void sendAdvancementMessage(String text) {
+        this.sendToDiscord("**\uD83C\uDF8A " + text + "**");
+    }
+
+    public void sendDeathMessage(String text) {
+        this.sendToDiscord("**\uD83D\uDD71 " + text + "**");
+    }
+
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         if (event.getMember() == null || event.getAuthor().isBot() || event.getGuild().getIdLong() != serverID) {
@@ -68,20 +77,24 @@ public class DiscordBot extends ListenerAdapter {
         final List<Message.Attachment> attachments = message.getAttachments();
         if (channel.getIdLong() == ChannelID) {
             final String name = event.getMember().getEffectiveName();
-            final BaseText text = new LiteralText("\u24B9");
-            final HoverEvent hoverText = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(member.getUser().getAsTag()));
-            final ClickEvent clickText = new ClickEvent(ClickEvent.Action.OPEN_URL, channelURL);
-//            text.fillStyle(new Style(TextColor.parse("blue"), null, null, null, null, null, null, null, null, null)).setColor(TextFormatting.BLUE).setHoverEvent(hoverText).setClickEvent(clickText);
-            text.append(new TranslatableText("chat.type.text", name, content));
+            final BaseText symbol = new LiteralText("\u24B9");
+            final HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(member.getUser().getAsTag()));
+            final ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.OPEN_URL, channelURL);
+            symbol.styled(style -> style
+                    .withColor(Formatting.BLUE)
+                    .withHoverEvent(hoverEvent)
+                    .withClickEvent(clickEvent));
+            final BaseText text = new LiteralText("\u02F9" + name + "\u02FC " + content);
+            final MutableText ingameMessage = new LiteralText("").append(symbol).append(text);
             for (Message.Attachment file : attachments) {
                 final BaseText fileName = new LiteralText(" " + file.getFileName());
-//                fileName.getStyle()
-//                        .setColor(TextFormatting.BLUE)
-//                        .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString("Open attachment")))
-//                        .setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, file.getUrl()));
-                text.append(fileName);
+                fileName.styled(style -> style
+                        .withColor(Formatting.BLUE)
+                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Open attachment")))
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, file.getUrl())));
+                ingameMessage.append(fileName);
             }
-            this.server.execute(() -> this.server.getPlayerManager().broadcast(text, MessageType.CHAT, Util.NIL_UUID));
+            this.server.execute(() -> this.server.getPlayerManager().broadcast(ingameMessage, MessageType.CHAT, Util.NIL_UUID));
         }
     }
 

@@ -4,7 +4,10 @@
   "package": "net.dragonbabyfly.discordchatbridge.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "ServerPlayNetworkHandlerMixin"
+    "MixinPlayerAdvancementTracker",
+    "MixinServerPlayerEntity",
+    "MixinTameableEntity",
+    "MixinServerPlayNetworkHandler"
   ],
   "client": [
   ],
