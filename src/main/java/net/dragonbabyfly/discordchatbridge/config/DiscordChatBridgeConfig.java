@@ -29,9 +29,10 @@ public class DiscordChatBridgeConfig extends Config {
         public static final StringConfigItem botName = new StringConfigItem("botName", "insert bot name here", "botName");
         public static final StringConfigItem botIconUrl = new StringConfigItem("botIconUrl", "insert bot icon url here", "botIconUrl");
         public static final IntegerConfigItem embedColor = new IntegerConfigItem("embedColor", 0, "embedColor");
+        public static final StringConfigItem status = new StringConfigItem("status", " nothing", "status");
 
         public GlobalConfig() {
-            super(of(token, chatChannelID, serverID, botName, botIconUrl, embedColor), "DiscordBot");
+            super(of(token, chatChannelID, serverID, botName, botIconUrl, embedColor, status), "DiscordBot");
         }
     }
 }

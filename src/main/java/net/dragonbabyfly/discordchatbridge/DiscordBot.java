@@ -47,6 +47,9 @@ public class DiscordBot extends ListenerAdapter {
         }
         guild.upsertCommand("tps", "Shows server TPS and MSPT").queue();
         guild.upsertCommand("online", "Shows the online players").queue();
+
+        String activity = DiscordChatBridge.CONFIG.getValue("DiscordBot.status", String.class);
+        this.jda.getPresence().setActivity(Activity.playing(activity));
     }
 
     public void sendToDiscord(String message) {
