@@ -1,6 +1,7 @@
 plugins {
     id 'fabric-loom' version '0.10-SNAPSHOT'
     id 'maven-publish'
+    id'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 version = project.mod_version
@@ -16,6 +17,17 @@ repositories {
     // for more information about repositories.
 }
 
+// Once we add accesswidener uncomment this and add it to fabric.mod.json too
+//loom {
+//    accessWidenerPath = file("src/main/resources/discordchatbridge.accesswidener")
+//}
+
+configurations {
+    includeTransitive {
+        transitive = true
+    }
+}
+
 dependencies {
     // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -26,10 +38,22 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     // Added dependencies for the mod
-    modImplementation "net.dv8tion:JDA:${project.JDA_version}"
+    implementation "net.dv8tion:JDA:${project.JDA_version}"
+    includeTransitive "net.dv8tion:JDA:${project.JDA_version}"
 
     modImplementation "com.oroarmor:oro-config-fabric:${project.oro_config_version}"
     include "com.oroarmor:oro-config-fabric:${project.oro_config_version}"
+}
+
+project.afterEvaluate {
+    configurations.includeTransitive.incoming.resolutionResult.allComponents {
+        if (it.id instanceof ModuleComponentIdentifier) {
+            def that = it
+            dependencies {
+                include group: that.id.getGroup(), name: that.id.getModule(), version: that.id.getVersion()
+            }
+        }
+    }
 }
 
 processResources {

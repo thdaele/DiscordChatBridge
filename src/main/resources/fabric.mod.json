@@ -13,7 +13,6 @@
   "license": "GPL-3.0",
   "icon": "assets/DiscordChatBridge/icon.png",
   "environment": "*",
-  "accessWidener" : "DiscordChatBridge.accesswidener",
   "entrypoints": {
     "client": [
     ],
@@ -22,7 +21,7 @@
     ]
   },
   "mixins": [
-    "DiscordChatBridge.mixins.json"
+    "discordchatbridge.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.12.12",

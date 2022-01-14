@@ -36,7 +36,7 @@ public class DiscordBot extends ListenerAdapter {
                 .addEventListeners(this)
                 .build()
                 .awaitReady();
-        this.sendToDiscord("Server started!");
+        this.sendToDiscord("Server has started!");
 
         Guild guild = this.jda.getGuildById(serverID);
         TextChannel channel = this.jda.getTextChannelById(ChannelID);
@@ -50,6 +50,10 @@ public class DiscordBot extends ListenerAdapter {
 
         String activity = DiscordChatBridge.CONFIG.getValue("DiscordBot.status", String.class);
         this.jda.getPresence().setActivity(Activity.playing(activity));
+    }
+
+    public void shutDownBot() {
+        this.jda.shutdown();
     }
 
     public void sendToDiscord(String message) {

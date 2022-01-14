@@ -16,7 +16,7 @@ public class DiscordChatBridge implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        LOGGER.info("Mod started!");
+        LOGGER.info("DiscordChatBridge has started!");
 
         CONFIG.readConfigFromFile();
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
@@ -26,6 +26,11 @@ public class DiscordChatBridge implements ModInitializer {
             } catch (LoginException | InterruptedException e) {
                 e.printStackTrace();
             }
+        });
+
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            discord.sendToDiscord("Server is shutting down!");
+            discord.shutDownBot();
         });
     }
 }
