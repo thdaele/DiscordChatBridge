@@ -16,6 +16,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class DiscordBot extends ListenerAdapter {
@@ -28,6 +30,8 @@ public class DiscordBot extends ListenerAdapter {
     private final static String authorName = DiscordChatBridge.CONFIG.getValue("DiscordBot.botName", String.class);
     private final static String authorIcon = DiscordChatBridge.CONFIG.getValue("DiscordBot.botIconUrl", String.class);
     private final static Integer embedColor = DiscordChatBridge.CONFIG.getValue("DiscordBot.embedColor", Integer.class);
+
+    public static final LocalDateTime BOT_START_TIME = LocalDateTime.now();
     
     public DiscordBot(String token, MinecraftServer minecraftServer) throws LoginException, InterruptedException {
         this.server = minecraftServer;
@@ -47,6 +51,7 @@ public class DiscordBot extends ListenerAdapter {
         }
         guild.upsertCommand("tps", "Shows server TPS and MSPT").queue();
         guild.upsertCommand("online", "Shows the online players").queue();
+        guild.upsertCommand("uptime", "Shows the server uptime").queue();
 
         String activity = DiscordChatBridge.CONFIG.getValue("DiscordBot.status", String.class);
         this.jda.getPresence().setActivity(Activity.playing(activity));
@@ -54,6 +59,30 @@ public class DiscordBot extends ListenerAdapter {
 
     public void shutDownBot() {
         this.jda.shutdown();
+    }
+
+    public String getUpTime() {
+        LocalDateTime endTime = LocalDateTime.now();
+        Duration botUpTime = Duration.between(BOT_START_TIME, endTime);
+        // Didn't find any way to format it nicely so this will do fine
+        String upTime = "Uptime: ";
+        long days = botUpTime.toDaysPart();
+        long hours = botUpTime.toHoursPart();
+        long minutes = botUpTime.toMinutesPart();
+        long seconds = botUpTime.toSecondsPart();
+        if (days > 0) {
+            upTime += String.format("%s day%s ", days, days > 1 ? "s" : "");
+        }
+        if (hours > 0) {
+            upTime += String.format("%s hour%s ", hours, hours > 1 ? "s" : "");
+        }
+        if (minutes > 0) {
+            upTime += String.format("%s minute%s ", minutes, minutes > 1 ? "s" : "");
+        }
+        if (seconds > 0) {
+            upTime += String.format("%s second%s ", seconds, seconds > 1 ? "s" : "");
+        }
+        return upTime;
     }
 
     public void sendToDiscord(String message) {
@@ -121,6 +150,8 @@ public class DiscordBot extends ListenerAdapter {
                 final MessageEmbed embed = new MessageEmbed(null, title, StringUtils.join(players, "\n").replaceAll("_", "\\\\_"), EmbedType.RICH, null, embedColor, null, null, author, null, null, null, null);
                 event.replyEmbeds(embed).queue();
             });
+        } else if (event.getName().equals("uptime")) {
+            event.reply(getUpTime()).queue();
         }
     }
 }

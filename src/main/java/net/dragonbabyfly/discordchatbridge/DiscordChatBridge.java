@@ -29,6 +29,7 @@ public class DiscordChatBridge implements ModInitializer {
         });
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            discord.sendToDiscord(discord.getUpTime());
             discord.sendToDiscord("Server is shutting down!");
             discord.shutDownBot();
         });
